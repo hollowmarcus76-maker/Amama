@@ -120,6 +120,146 @@
                 if (Date.now() < end) requestAnimationFrame(frame);
             }());
         }
+
+        <style>
+    /* ... existing styles ... */
+
+    /* Scratch Card Styles */
+    .scratch-container {
+        position: relative;
+        width: 100%;
+        max-width: 300px;
+        height: 150px;
+        margin: 20px auto;
+        border-radius: 20px;
+        overflow: hidden;
+        background: #222;
+        cursor: crosshair;
+    }
+
+    .scratch-canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 2;
+    }
+
+    .scratch-reveal-text {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1;
+        font-family: 'Dancing Script', cursive;
+        font-size: 1.5rem;
+        color: var(--gold);
+        padding: 20px;
+    }
+
+    /* Floating Balloons */
+    .balloon {
+        position: fixed;
+        bottom: -100px;
+        opacity: 0.7;
+        z-index: 1;
+        transition: transform 0.5s;
+        pointer-events: none;
+    }
+
+    /* Mouse Glow Effect */
+    .glow-point {
+        width: 10px;
+        height: 10px;
+        background: var(--primary);
+        box-shadow: 0 0 50px 20px var(--primary);
+        border-radius: 50%;
+        position: fixed;
+        pointer-events: none;
+        z-index: 9999;
+        opacity: 0.4;
+    }
+</style>
+
+<div class="glow-point" id="cursorGlow"></div>
+
+<section class="card">
+    <h2>Scratch for a Message 🕯️</h2>
+    <p style="font-size: 0.8rem; opacity: 0.7;">Use your finger/mouse to reveal</p>
+    <div class="scratch-container" id="scratchCard">
+        <div class="scratch-reveal-text">Amama, you light up every room you enter! 🌟</div>
+        <canvas class="scratch-canvas" id="scratchCanvas"></canvas>
+    </div>
+</section>
+
+<script>
+    // Cursor Glow Logic
+    const glow = document.getElementById('cursorGlow');
+    document.addEventListener('mousemove', (e) => {
+        glow.style.left = e.clientX + 'px';
+        glow.style.top = e.clientY + 'px';
+    });
+
+    // Scratch Card Logic
+    const canvas = document.getElementById('scratchCanvas');
+    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('scratchCard');
+
+    function initScratch() {
+        canvas.width = container.offsetWidth;
+        canvas.height = container.offsetHeight;
+        ctx.fillStyle = '#666'; // Scratch-off color
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Add "Scratch Me" text on the gray area
+        ctx.fillStyle = '#fff';
+        ctx.font = '20px Inter';
+        ctx.textAlign = 'center';
+        ctx.fillText('SCRATCH ME', canvas.width / 2, canvas.height / 2 + 10);
+    }
+
+    function scratch(e) {
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX || e.touches[0].clientX) - rect.left;
+        const y = (e.clientY || e.touches[0].clientY) - rect.top;
+
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.beginPath();
+        ctx.arc(x, y, 20, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    canvas.addEventListener('mousemove', scratch);
+    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); scratch(e); });
+    window.onload = initScratch;
+
+    // Floating Balloons Function
+    function spawnBalloon() {
+        const balloon = document.createElement('div');
+        balloon.className = 'balloon';
+        balloon.innerHTML = '🎈';
+        balloon.style.left = Math.random() * 100 + 'vw';
+        balloon.style.fontSize = (Math.random() * 20 + 20) + 'px';
+        document.body.appendChild(balloon);
+
+        let pos = -100;
+        const interval = setInterval(() => {
+            if (pos > window.innerHeight + 100) {
+                clearInterval(interval);
+                balloon.remove();
+            } else {
+                pos += 2;
+                balloon.style.bottom = pos + 'px';
+                balloon.style.transform = `translateX(${Math.sin(pos/50) * 20}px)`;
+            }
+        }, 20);
+    }
+
+    // Call this occasionally or inside megaCelebration
+    setInterval(spawnBalloon, 2000);
+</script>
+    
     </script>
 </body>
 </html>
